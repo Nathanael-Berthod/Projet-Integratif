@@ -1,0 +1,54 @@
+# ============================================================
+# docker-compose.yml - SAE2.04-3
+# Image : dperson/samba (Docker Hub)
+# Reseau : samba (172.20.0.0/24), IP du service : 172.20.0.50
+#
+# Lancer  : docker compose up -d
+# Tester  : docker exec samba-compose smbclient -L //172.20.0.50 -U moi%root
+# Arreter : docker compose down
+# ============================================================
+
+services:
+  samba:
+    image: dperson/samba          # Image depuis Docker Hub
+    container_name: samba-compose
+    hostname: samba-compose
+    privileged: true              # Necessaire pour nmbd (ports privilegies)
+    restart: unless-stopped       # Redemarre automatiquement sauf arret manuel
+
+    networks:
+      samba:
+        ipv4_address: 172.20.0.50 # IP fixe pour joindre les partages
+
+    # Volumes : dossiers locaux montes dans le conteneur
+    # Les fichiers persistent sur la machine hote apres arret du conteneur
+    volumes:
+      - ./data/amoi:/mount/amoi
+      - ./data/atoi:/mount/atoi
+      - ./data/anous:/mount/anous
+      - ./data/public:/mount/public
+      - ./data/amoi-atoi:/mount/amoi-atoi
+      - ./data/amoi-anous:/mount/amoi-anous
+
+    # Configuration via arguments dperson/samba :
+    #   -u "user;password"  : creation des comptes
+    #   -s "nom;chemin;browsable;readonly;guest;utilisateurs"
+    #     browsable : visible dans la liste des partages
+    #     readonly  : yes=lecture seule pour tous, no=ecriture autorisee
+    #     guest     : yes=acces sans mot de passe, no=authentification requise
+    command: >
+      -p
+      -S -n -w "WORKGROUP"
+      -u "moi;root"
+      -u "toi;root"
+      -u "nous;root"
+      -s "public;/mount/public;yes;no;yes;moi,toi,nous"
+      -s "amoi;/mount/amoi;no;no;no;moi"
+      -s "atoi;/mount/atoi;no;no;no;toi"
+      -s "anous;/mount/anous;no;no;no;nous"
+      -s "amoi-atoi;/mount/amoi-atoi;no;no;no;moi,toi"
+      -s "amoi-anous;/mount/amoi-anous;no;no;no;moi,nous"
+
+networks:
+  samba:
+    external: true  # Reseau cree au prealable : docker network create ... samba
