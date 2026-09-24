@@ -207,4 +207,3 @@ Softphone **Linphone** (desktop ou mobile) — s'enregistrer sur `34.62.55.225` 
 ## Auteur
 
 **Nathanaël Berthod** — Étudiant BUT R&T, IUT de Roanne
-📧 berthod.nathanael@gmail.com
